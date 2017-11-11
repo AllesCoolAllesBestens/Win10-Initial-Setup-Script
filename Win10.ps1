@@ -2,7 +2,7 @@
 ##########
 # Win10 / WinServer2016 Initial Setup Script
 # Author: Disassembler <disassembler@dasm.cz>
-# Version: v2.8, 2017-09-09
+# Version: v2.10, 2017-11-09
 # Source: https://github.com/Disassembler0/Win10-Initial-Setup-Script
 ##########
 
@@ -16,7 +16,9 @@ $tweaks = @(
 	"DisableWiFiSense",             # "EnableWiFiSense",
 	# "DisableSmartScreen",         # "EnableSmartScreen",
 	"DisableWebSearch",             # "EnableWebSearch",
-	"DisableStartSuggestions",      # "EnableStartSuggestions",
+	"DisableAppSuggestions",        # "EnableAppSuggestions",
+	# "DisableBackgroundApps",      # "EnableBackgroundApps",
+	"DisableLockScreenSpotlight",   # "EnableLockScreenSpotlight",
 	"DisableLocationTracking",      # "EnableLocationTracking",
 	"DisableMapUpdates",            # "EnableMapUpdates",
 	"DisableFeedback",              # "EnableFeedback",
@@ -31,20 +33,25 @@ $tweaks = @(
 	### Service Tweaks ###
 	"SetUACLow",                  # "SetUACHigh",
 	# "EnableSharingMappedDrives",  # "DisableSharingMappedDrives",
-	# "DisableAdminShares",           # "EnableAdminShares",
-	"DisableSMB1",                  # "EnableSMB1",
+
+	"DisableAdminShares",           # "EnableAdminShares",
+	# "DisableSMB1",                # "EnableSMB1",
 	"SetCurrentNetworkPrivate",     # "SetCurrentNetworkPublic",
 	# "SetUnknownNetworksPrivate",  # "SetUnknownNetworksPublic",
-	"DisableFirewall",            # "EnableFirewall",
-	"DisableDefender",            # "EnableDefender",
-	"DisableUpdateMSRT",          # "EnableUpdateMSRT",
+	"EnableCtrldFolderAccess",      # "DisableCtrldFolderAccess",
+	# "DisableFirewall",            # "EnableFirewall",
+	# "DisableDefender",            # "EnableDefender",
+	# "DisableDefenderCloud,"       # "EnableDefenderCloud",
+	# "DisableUpdateMSRT",          # "EnableUpdateMSRT",
 	# "DisableUpdateDriver",        # "EnableUpdateDriver",
 	"DisableUpdateRestart",         # "EnableUpdateRestart",
 	"DisableHomeGroups",            # "EnableHomeGroups",
+	"DisableSharedExperiences",     # "EnableSharedExperiences",
 	"DisableRemoteAssistance",      # "EnableRemoteAssistance",
 	"EnableRemoteDesktop",          # "DisableRemoteDesktop",
 	"DisableAutoplay",              # "EnableAutoplay",
 	"DisableAutorun",               # "EnableAutorun",
+	# "EnableStorageSense",         # "DisableStorageSense",
 	# "DisableDefragmentation",     # "EnableDefragmentation",
 	# "DisableSuperfetch",          # "EnableSuperfetch",
 	# "DisableIndexing",            # "EnableIndexing",
@@ -74,12 +81,14 @@ $tweaks = @(
 	"HideRecentShortcuts",          # "ShowRecentShortcuts",
 	"SetExplorerThisPC",            # "SetExplorerQuickAccess",
 	"ShowThisPCOnDesktop",          # "HideThisPCFromDesktop",
+	# "ShowUserFolderOnDesktop",    # "HideUserFolderFromDesktop",
 	"HideDesktopFromThisPC",        # "ShowDesktopInThisPC",
 	"HideDocumentsFromThisPC",      # "ShowDocumentsInThisPC",
 	"HideDownloadsFromThisPC",      # "ShowDownloadsInThisPC",
 	"HideMusicFromThisPC",          # "ShowMusicInThisPC",
 	"HidePicturesFromThisPC",       # "ShowPicturesInThisPC",
 	"HideVideosFromThisPC",         # "ShowVideosInThisPC",
+	"Hide3DObjectsFromThisPC",      # "Show3DObjectsInThisPC",
 	"SetVisualFXPerformance",       # "SetVisualFXAppearance",
 	# "DisableThumbnails",          # "EnableThumbnails",
 	"DisableThumbsDB",              # "EnableThumbsDB",
@@ -92,8 +101,8 @@ $tweaks = @(
 	"UninstallMsftBloat",           # "InstallMsftBloat",
 	"UninstallThirdPartyBloat",     # "InstallThirdPartyBloat",
 	# "UninstallWindowsStore",      # "InstallWindowsStore",
-	"DisableConsumerApps",          # "EnableConsumerApps",
 	"DisableXboxFeatures",          # "EnableXboxFeatures",
+	"DisableAdobeFlash",            # "EnableAdobeFlash",
 	# "UninstallMediaPlayer",       # "InstallMediaPlayer",
 	# "UninstallWorkFolders",       # "InstallWorkFolders",
 	"InstallLinuxSubsystem",      # "UninstallLinuxSubsystem",
@@ -199,18 +208,63 @@ Function EnableWebSearch {
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "DisableWebSearch" -ErrorAction SilentlyContinue
 }
 
-# Disable Start Menu suggestions
-Function DisableStartSuggestions {
-	Write-Host "Disabling Start Menu suggestions..."
-	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Type DWord -Value 0
+# Disable Application suggestions and automatic installation
+Function DisableAppSuggestions {
+	Write-Host "Disabling Application suggestions..."
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "ContentDeliveryAllowed" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "OemPreInstalledAppsEnabled" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEnabled" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEverEnabled" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338389Enabled" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338388Enabled" -Type DWord -Value 0
+	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent")) {
+		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsConsumerFeatures" -Type DWord -Value 1
 }
 
-# Enable Start Menu suggestions
-Function EnableStartSuggestions {
-	Write-Host "Enabling Start Menu suggestions..."
-	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Type DWord -Value 1
+# Enable Application suggestions and automatic installation
+Function EnableAppSuggestions {
+	Write-Host "Enabling Application suggestions..."
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "ContentDeliveryAllowed" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "OemPreInstalledAppsEnabled" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEnabled" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "PreInstalledAppsEverEnabled" -Type DWord -Value 1
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SilentInstalledAppsEnabled" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338389Enabled" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Type DWord -Value 1
+	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338388Enabled" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsConsumerFeatures" -ErrorAction SilentlyContinue
+}
+
+# Disable Background application access - Ie. if apps can download or update even when they aren't used, affects also start menu tiles
+Function DisableBackgroundApps {
+	Write-Host "Disabling Background application access..."
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" -Name "GlobalUserDisabled" -Type DWord -Value 1
+}
+
+# Enable Background application access
+Function EnableBackgroundApps {
+	Write-Host "Enabling Background application access..."
+	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications" -Name "GlobalUserDisabled" -ErrorAction SilentlyContinue
+}
+
+# Disable Lock screen Spotlight - New backgrounds, tips, advertisements etc.
+Function DisableLockScreenSpotlight {
+	Write-Host "Disabling Lock screen spotlight..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "RotatingLockScreenEnabled" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "RotatingLockScreenOverlayEnabled" -Type DWord -Value 0
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338387Enabled" -Type DWord -Value 0
+}
+
+# Enable Lock screen Spotlight
+Function EnableLockScreenSpotlight {
+	Write-Host "Disabling Lock screen spotlight..."
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "RotatingLockScreenEnabled" -Type DWord -Value 1
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "RotatingLockScreenOverlayEnabled" -Type DWord -Value 1
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-338387Enabled" -ErrorAction SilentlyContinue
 }
 
 # Disable Location Tracking
@@ -261,12 +315,17 @@ Function DisableAdvertisingID {
 		New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" | Out-Null
 	}
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Type DWord -Value 0
+	If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy")) {
+		New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" -Name "TailoredExperiencesWithDiagnosticDataEnabled" -Type DWord -Value 0
 }
 
 # Enable Advertising ID
 Function EnableAdvertisingID {
 	Write-Host "Enabling Advertising ID..."
 	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -ErrorAction SilentlyContinue
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Privacy" -Name "TailoredExperiencesWithDiagnosticDataEnabled" -Type DWord -Value 2
 }
 
 # Disable Cortana
@@ -426,13 +485,13 @@ Function EnableAdminShares {
 	Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareWks" -ErrorAction SilentlyContinue
 }
 
-# Disable obsolete SMB 1.0 protocol
+# Disable obsolete SMB 1.0 protocol - Disabled by default since 1709
 Function DisableSMB1 {
 	Write-Host "Disabling SMB 1.0 protocol..."
 	Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
 }
 
-# Enable obsolete SMB 1.0 protocol
+# Enable obsolete SMB 1.0 protocol - Disabled by default since 1709
 Function EnableSMB1 {
 	Write-Host "Enabling SMB 1.0 protocol..."
 	Set-SmbServerConfiguration -EnableSMB1Protocol $true -Force
@@ -465,6 +524,18 @@ Function SetUnknownNetworksPublic {
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\CurrentVersion\NetworkList\Signatures\010103000F0000F0010000000F0000F0C967A3643C3AD745950DA7859209176EF5B87C875FA20DF21951640E807D7C24" -Name "Category" -ErrorAction SilentlyContinue
 }
 
+# Enable Controlled Folder Access (Defender Exploit Guard feature) - Not applicable to Server
+Function EnableCtrldFolderAccess {
+	Write-Host "Enabling Controlled Folder Access..."
+	Set-MpPreference -EnableControlledFolderAccess Enabled
+}
+
+# Disable Controlled Folder Access (Defender Exploit Guard feature) - Not applicable to Server
+Function DisableCtrldFolderAccess {
+	Write-Host "Disabling Controlled Folder Access..."
+	Set-MpPreference -EnableControlledFolderAccess Disabled
+}
+
 # Disable Firewall
 Function DisableFirewall {
 	Write-Host "Disabling Firewall..."
@@ -495,6 +566,23 @@ Function EnableDefender {
 	Write-Host "Enabling Windows Defender..."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -ErrorAction SilentlyContinue
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Name "SecurityHealth" -Type ExpandString -Value "`"%ProgramFiles%\Windows Defender\MSASCuiL.exe`""
+}
+
+# Disable Windows Defender Cloud
+Function DisableDefenderCloud {
+    Write-Host "Disabling Windows Defender Cloud..."
+    If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet")) {
+        New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Force | Out-Null
+    }
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SpynetReporting" -Type DWord -Value 0
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -Type DWord -Value 2
+}
+
+# Enable Windows Defender Cloud
+Function EnableDefenderCloud {
+    Write-Host "Enabling Windows Defender Cloud..."
+    Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SpynetReporting" -ErrorAction SilentlyContinue
+    Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" -Name "SubmitSamplesConsent" -ErrorAction SilentlyContinue
 }
 
 # Disable offering of Malicious Software Removal Tool through Windows Update
@@ -563,6 +651,18 @@ Function EnableHomeGroups {
 	Start-Service "HomeGroupProvider" -WarningAction SilentlyContinue
 }
 
+# Disable Shared Experiences - Not applicable to Server
+Function DisableSharedExperiences {
+	Write-Host "Disabling Shared Experiences..."
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CDP" -Name "RomeSdkChannelUserAuthzPolicy" -Type DWord -Value 0
+}
+
+# Enable Shared Experiences - Not applicable to Server
+Function EnableSharedExperiences {
+	Write-Host "Enabling Shared Experiences..."
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CDP" -Name "RomeSdkChannelUserAuthzPolicy" -Type DWord -Value 1
+}
+
 # Disable Remote Assistance - Not applicable to Server (unless Remote Assistance is explicitly installed)
 Function DisableRemoteAssistance {
 	Write-Host "Disabling Remote Assistance..."
@@ -614,6 +714,18 @@ Function DisableAutorun {
 Function EnableAutorun {
 	Write-Host "Enabling Autorun for all drives..."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoDriveTypeAutoRun" -ErrorAction SilentlyContinue
+}
+
+# Enable Storage Sense - automatic disk cleanup - Not applicable to Server
+Function EnableStorageSense {
+	Write-Host "Enabling Storage Sense..."
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" -Name "01" -Type DWord -Value 1
+}
+
+# Disable Storage Sense - Not applicable to Server
+Function DisableStorageSense {
+	Write-Host "Disabling Storage Sense..."
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" -Name "01" -Type DWord -Value 1
 }
 
 # Disable scheduled defragmentation task
@@ -739,7 +851,7 @@ Function EnableLockScreen {
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Personalization" -Name "NoLockScreen" -ErrorAction SilentlyContinue
 }
 
-# Disable Lock screen (Anniversary Update workaround) - Applicable to RS1 or newer
+# Disable Lock screen (Anniversary Update workaround) - Applicable to 1607 or newer
 Function DisableLockScreenRS1 {
 	Write-Host "Disabling Lock screen using scheduler workaround..."
 	$service = New-Object -com Schedule.Service
@@ -755,7 +867,7 @@ Function DisableLockScreenRS1 {
 	$service.GetFolder("\").RegisterTaskDefinition("Disable LockScreen", $task, 6, "NT AUTHORITY\SYSTEM", $null, 4) | Out-Null
 }
 
-# Enable Lock screen (Anniversary Update workaround) - Applicable to RS1 or newer
+# Enable Lock screen (Anniversary Update workaround) - Applicable to 1607 or newer
 Function EnableLockScreenRS1 {
 	Write-Host "Enabling Lock screen (removing scheduler workaround)..."
 	Unregister-ScheduledTask -TaskName "Disable LockScreen" -Confirm:$false -ErrorAction SilentlyContinue
@@ -770,7 +882,7 @@ Function HideNetworkFromLockScreen {
 # Show network options on lock screen
 Function ShowNetworkOnLockScreen {
 	Write-Host "Showing network options on Lock Screen..."
-	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "DontDisplayNetworkSelectionUI" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "DontDisplayNetworkSelectionUI" -ErrorAction SilentlyContinue
 }
 
 # Hide shutdown options from Lock Screen
@@ -1013,88 +1125,142 @@ Function HideThisPCFromDesktop {
 	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -ErrorAction SilentlyContinue
 }
 
+# Show User Folder shortcut on desktop
+Function ShowUserFolderOnDesktop {
+	Write-Host "Showing User Folder shortcut on desktop..."
+	If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu")) {
+		New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Type DWord -Value 0
+	If (!(Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel")) {
+		New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Type DWord -Value 0
+}
+
+# Hide User Folder shortcut from desktop
+Function HideUserFolderFromDesktop {
+	Write-Host "Hiding User Folder shortcut from desktop..."
+	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" -Name "{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -ErrorAction SilentlyContinue
+}
+
 # Hide Desktop icon from This PC
 Function HideDesktopFromThisPC {
 	Write-Host "Hiding Desktop icon from This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}" -Recurse -ErrorAction SilentlyContinue
 }
 
 # Show Desktop icon in This PC
 Function ShowDesktopInThisPC {
 	Write-Host "Showing Desktop icon in This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}" | Out-Null
+	}
 }
 
 # Hide Documents icon from This PC
 Function HideDocumentsFromThisPC {
 	Write-Host "Hiding Documents icon from This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{f42ee2d3-909f-4907-8871-4c22fc0bf756}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{f42ee2d3-909f-4907-8871-4c22fc0bf756}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{d3162b92-9365-467a-956b-92703aca08af}" -Recurse -ErrorAction SilentlyContinue
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A8CDFF1C-4878-43be-B5FD-F8091C1C60D0}" -Recurse -ErrorAction SilentlyContinue
 }
 
 # Show Documents icon in This PC
 Function ShowDocumentsInThisPC {
 	Write-Host "Showing Documents icon in This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{f42ee2d3-909f-4907-8871-4c22fc0bf756}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{f42ee2d3-909f-4907-8871-4c22fc0bf756}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{d3162b92-9365-467a-956b-92703aca08af}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{d3162b92-9365-467a-956b-92703aca08af}" | Out-Null
+	}
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A8CDFF1C-4878-43be-B5FD-F8091C1C60D0}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A8CDFF1C-4878-43be-B5FD-F8091C1C60D0}" | Out-Null
+	}
 }
 
 # Hide Downloads icon from This PC
 Function HideDownloadsFromThisPC {
 	Write-Host "Hiding Downloads icon from This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{7d83ee9b-2244-4e70-b1f5-5393042af1e4}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{7d83ee9b-2244-4e70-b1f5-5393042af1e4}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{088e3905-0323-4b02-9826-5d99428e115f}" -Recurse -ErrorAction SilentlyContinue
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{374DE290-123F-4565-9164-39C4925E467B}" -Recurse -ErrorAction SilentlyContinue
 }
 
 # Show Downloads icon in This PC
 Function ShowDownloadsInThisPC {
 	Write-Host "Showing Downloads icon in This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{7d83ee9b-2244-4e70-b1f5-5393042af1e4}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{7d83ee9b-2244-4e70-b1f5-5393042af1e4}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{088e3905-0323-4b02-9826-5d99428e115f}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{088e3905-0323-4b02-9826-5d99428e115f}" | Out-Null
+	}
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{374DE290-123F-4565-9164-39C4925E467B}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{374DE290-123F-4565-9164-39C4925E467B}" | Out-Null
+	}
 }
 
 # Hide Music icon from This PC
 Function HideMusicFromThisPC {
 	Write-Host "Hiding Music icon from This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{a0c69a99-21c8-4671-8703-7934162fcf1d}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{a0c69a99-21c8-4671-8703-7934162fcf1d}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{3dfdf296-dbec-4fb4-81d1-6a3438bcf4de}" -Recurse -ErrorAction SilentlyContinue
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{1CF1260C-4DD0-4ebb-811F-33C572699FDE}" -Recurse -ErrorAction SilentlyContinue
 }
 
 # Show Music icon in This PC
 Function ShowMusicInThisPC {
 	Write-Host "Showing Music icon in This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{a0c69a99-21c8-4671-8703-7934162fcf1d}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{a0c69a99-21c8-4671-8703-7934162fcf1d}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{3dfdf296-dbec-4fb4-81d1-6a3438bcf4de}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{3dfdf296-dbec-4fb4-81d1-6a3438bcf4de}" | Out-Null
+	}
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{1CF1260C-4DD0-4ebb-811F-33C572699FDE}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{1CF1260C-4DD0-4ebb-811F-33C572699FDE}" | Out-Null
+	}
 }
 
 # Hide Pictures icon from This PC
 Function HidePicturesFromThisPC {
 	Write-Host "Hiding Pictures icon from This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{0ddd015d-b06c-45d5-8c4c-f59713854639}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{0ddd015d-b06c-45d5-8c4c-f59713854639}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{24ad3ad4-a569-4530-98e1-ab02f9417aa8}" -Recurse -ErrorAction SilentlyContinue
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{3ADD1653-EB32-4cb0-BBD7-DFA0ABB5ACCA}" -Recurse -ErrorAction SilentlyContinue
 }
 
 # Show Pictures icon in This PC
 Function ShowPicturesInThisPC {
 	Write-Host "Showing Pictures icon in This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{0ddd015d-b06c-45d5-8c4c-f59713854639}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{0ddd015d-b06c-45d5-8c4c-f59713854639}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{24ad3ad4-a569-4530-98e1-ab02f9417aa8}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{24ad3ad4-a569-4530-98e1-ab02f9417aa8}" | Out-Null
+	}
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{3ADD1653-EB32-4cb0-BBD7-DFA0ABB5ACCA}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{3ADD1653-EB32-4cb0-BBD7-DFA0ABB5ACCA}" | Out-Null
+	}
 }
 
 # Hide Videos icon from This PC
 Function HideVideosFromThisPC {
 	Write-Host "Hiding Videos icon from This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{35286a68-3c57-41a1-bbb1-0eae73d76c95}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{35286a68-3c57-41a1-bbb1-0eae73d76c95}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Hide"
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{f86fa3ab-70d2-4fc7-9c99-fcbf05467f3a}" -Recurse -ErrorAction SilentlyContinue
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A0953C92-50DC-43bf-BE83-3742FED03C9C}" -Recurse -ErrorAction SilentlyContinue
 }
 
 # Show Videos icon in This PC
 Function ShowVideosInThisPC {
 	Write-Host "Showing Videos icon in This PC..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{35286a68-3c57-41a1-bbb1-0eae73d76c95}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{35286a68-3c57-41a1-bbb1-0eae73d76c95}\PropertyBag" -Name "ThisPCPolicy" -Type String -Value "Show"
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{f86fa3ab-70d2-4fc7-9c99-fcbf05467f3a}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{f86fa3ab-70d2-4fc7-9c99-fcbf05467f3a}" | Out-Null
+	}
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A0953C92-50DC-43bf-BE83-3742FED03C9C}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{A0953C92-50DC-43bf-BE83-3742FED03C9C}" | Out-Null
+	}
+}
+
+# Hide 3D Objects icon from This PC
+Function Hide3DObjectsFromThisPC {
+	Write-Host "Hiding 3D Objects icon from This PC..."
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}" -Recurse -ErrorAction SilentlyContinue
+}
+
+# Show 3D Objects icon in This PC
+Function Show3DObjectsInThisPC {
+	Write-Host "Showing 3D Objects icon in This PC..."
+	If (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}")) {
+		New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}" | Out-Null
+	}
 }
 
 # Adjusts visual effects for performance - Disables animations, transparency etc. but leaves font smoothing and miniatures enabled
@@ -1254,6 +1420,7 @@ Function InstallOneDrive {
 # Uninstall default Microsoft applications
 Function UninstallMsftBloat {
 	Write-Host "Uninstalling default Microsoft applications..."
+<#
 	Get-AppxPackage "Microsoft.3DBuilder" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
 	Get-AppxPackage "Microsoft.BingFinance" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
 	Get-AppxPackage "Microsoft.BingNews" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
@@ -1288,6 +1455,42 @@ Function UninstallMsftBloat {
 	Get-AppxPackage "Microsoft.MSPaint" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
 	Get-AppxPackage "Microsoft.Microsoft3DViewer" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
 	Get-AppxPackage "Microsoft.RemoteDesktop" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
+#>
+	Get-AppxPackage "Microsoft.3DBuilder" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.BingFinance" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.BingNews" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.BingSports" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.BingWeather" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Getstarted" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.MicrosoftOfficeHub" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.MicrosoftSolitaireCollection" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Office.OneNote" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.People" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.SkypeApp" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Windows.Photos" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.WindowsAlarms" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.WindowsCamera" | Remove-AppxPackage
+	Get-AppxPackage "microsoft.windowscommunicationsapps" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.WindowsMaps" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.WindowsPhone" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.WindowsSoundRecorder" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.ZuneMusic" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.ZuneVideo" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.AppConnector" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.ConnectivityStore" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Office.Sway" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Messaging" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.CommsPhone" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.MicrosoftStickyNotes" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.OneConnect" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.WindowsFeedbackHub" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.MinecraftUWP" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.MicrosoftPowerBIForWindows" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.NetworkSpeedTest" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.MSPaint" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Microsoft3DViewer" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.RemoteDesktop" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Print3D" | Remove-AppxPackage
 }
 
 # Install default Microsoft applications
@@ -1327,6 +1530,7 @@ Function InstallMsftBloat {
 	Get-AppxPackage -AllUsers "Microsoft.MSPaint" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.Microsoft3DViewer" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.RemoteDesktop" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.Print3D" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 }
 # In case you have removed them for good, you can try to restore the files using installation medium as follows
 # New-Item C:\Mnt -Type Directory | Out-Null
@@ -1395,28 +1599,21 @@ Function InstallWindowsStore {
 	Get-AppxPackage -AllUsers "Microsoft.WindowsStore" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 }
 
-# Disable installation of consumer experience applications
-Function DisableConsumerApps {
-	Write-Host "Disabling installation of consumer experience applications..."
-	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent")) {
-		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Force | Out-Null
-	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsConsumerFeatures" -Type DWord -Value 1
-}
-
-# Enable installation of consumer experience applications
-Function EnableConsumerApps {
-	Write-Host "Enabling installation of consumer experience applications..."
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Name "DisableWindowsConsumerFeatures" -ErrorAction SilentlyContinue
-}
-
 # Disable Xbox features
 Function DisableXboxFeatures {
 	Write-Host "Disabling Xbox features..."
+<#
 	Get-AppxPackage "Microsoft.XboxApp" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
 	Get-AppxPackage "Microsoft.XboxIdentityProvider" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
 	Get-AppxPackage "Microsoft.XboxSpeechToTextOverlay" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
 	Get-AppxPackage "Microsoft.XboxGameOverlay" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
+#>
+	Get-AppxPackage "Microsoft.XboxApp" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.XboxIdentityProvider" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.XboxSpeechToTextOverlay" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.XboxGameOverlay" | Remove-AppxPackage
+	Get-AppxPackage "Microsoft.Xbox.TCUI" | Remove-AppxPackage
+
 	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0
 	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR")) {
 		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" | Out-Null
@@ -1431,8 +1628,29 @@ Function EnableXboxFeatures {
 	Get-AppxPackage -AllUsers "Microsoft.XboxIdentityProvider" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.XboxSpeechToTextOverlay" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.XboxGameOverlay" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "Microsoft.Xbox.TCUI" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 1
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -ErrorAction SilentlyContinue
+}
+
+# Disable built-in Adobe Flash in IE and Edge
+Function DisableAdobeFlash {
+	Write-Host "Disabling built-in Adobe Flash in IE and Edge..."
+	If (!(Test-Path "HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\Addons")) {
+		New-Item -Path "HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\Addons" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\Addons" -Name "FlashPlayerEnabled" -Type DWord -Value 0
+	If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Ext\Settings\{D27CDB6E-AE6D-11CF-96B8-444553540000}")) {
+		New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Ext\Settings\{D27CDB6E-AE6D-11CF-96B8-444553540000}" -Force | Out-Null
+	}
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Ext\Settings\{D27CDB6E-AE6D-11CF-96B8-444553540000}" -Name "Flags" -Type DWord -Value 1
+}
+
+# Enable built-in Adobe Flash in IE and Edge
+Function EnableAdobeFlash {
+	Write-Host "Enabling built-in Adobe Flash in IE and Edge..."
+	Remove-ItemProperty -Path "HKCU:\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\Addons" -Name "FlashPlayerEnabled" -ErrorAction SilentlyContinue
+	Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Ext\Settings\{D27CDB6E-AE6D-11CF-96B8-444553540000}" -Name "Flags" -ErrorAction SilentlyContinue
 }
 
 # Uninstall Windows Media Player
@@ -1459,7 +1677,7 @@ Function InstallWorkFolders {
 	Enable-WindowsOptionalFeature -Online -FeatureName "WorkFolders-Client" -NoRestart -WarningAction SilentlyContinue | Out-Null
 }
 
-# Install Linux Subsystem - Applicable to RS1 or newer, not applicable to Server yet
+# Install Linux Subsystem - Applicable to 1607 or newer, not applicable to Server yet
 Function InstallLinuxSubsystem {
 	Write-Host "Installing Linux Subsystem..."
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowDevelopmentWithoutDevLicense" -Type DWord -Value 1
@@ -1467,7 +1685,7 @@ Function InstallLinuxSubsystem {
 	Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -NoRestart -WarningAction SilentlyContinue | Out-Null
 }
 
-# Uninstall Linux Subsystem - Applicable to RS1 or newer, not applicable to Server yet
+# Uninstall Linux Subsystem - Applicable to 1607 or newer, not applicable to Server yet
 Function UninstallLinuxSubsystem {
 	Write-Host "Uninstalling Linux Subsystem..."
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowDevelopmentWithoutDevLicense" -Type DWord -Value 0
@@ -1689,7 +1907,6 @@ Function EnableIEEnhancedSecurity {
 ##########
 
 # Relaunch the script with administrator privileges
-$PSCommandArgs = $args
 Function RequireAdmin {
 	If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")) {
 		Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" $PSCommandArgs" -WorkingDirectory $pwd -Verb RunAs
@@ -1716,11 +1933,19 @@ Function Restart {
 # Parse parameters and apply tweaks
 ##########
 
+# Normalize path to preset file
+$preset = ""
+$PSCommandArgs = $args
+If ($args -And $args[0].ToLower() -eq "-preset") {
+	$preset = Resolve-Path $($args | Select-Object -Skip 1)
+	$PSCommandArgs = "-preset `"$preset`""
+}
+
 # Load function names from command line arguments or a preset file
 If ($args) {
 	$tweaks = $args
-	If ($args[0].ToLower() -eq "-preset") {
-		$tweaks = Get-Content "$($args | Select-Object -Skip 1)" -ErrorAction Stop | ForEach { $_.Trim() } | Where { $_ -ne "" -and $_[0] -ne "#" }
+	If ($preset) {
+		$tweaks = Get-Content $preset -ErrorAction Stop | ForEach { $_.Trim() } | Where { $_ -ne "" -and $_[0] -ne "#" }
 	}
 }
 

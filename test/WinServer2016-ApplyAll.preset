@@ -6,7 +6,9 @@ DisableTelemetry
 DisableWiFiSense
 DisableSmartScreen
 DisableWebSearch
-DisableStartSuggestions
+DisableAppSuggestions
+DisableBackgroundApps
+DisableLockScreenSpotlight
 DisableLocationTracking
 DisableMapUpdates
 DisableFeedback
@@ -18,22 +20,26 @@ DisableAutoLogger
 DisableDiagTrack
 DisableWAPPush
 
-SetUACHigh
+SetUACLow
 EnableSharingMappedDrives
 DisableAdminShares
 DisableSMB1
 SetCurrentNetworkPrivate
 SetUnknownNetworksPrivate
+# EnableCtrldFolderAccess
 DisableFirewall
 DisableDefender
+DisableDefenderCloud
 DisableUpdateMSRT
 DisableUpdateDriver
 DisableUpdateRestart
 # DisableHomeGroups
+# DisableSharedExperiences
 # DisableRemoteAssistance
 EnableRemoteDesktop
 DisableAutoplay
 DisableAutorun
+# EnableStorageSense
 DisableDefragmentation
 # DisableSuperfetch
 DisableIndexing
@@ -62,12 +68,14 @@ HideSyncNotifications
 HideRecentShortcuts
 SetExplorerThisPC
 ShowThisPCOnDesktop
+ShowUserFolderOnDesktop
 HideDesktopFromThisPC
 HideDocumentsFromThisPC
 HideDownloadsFromThisPC
 HideMusicFromThisPC
 HidePicturesFromThisPC
 HideVideosFromThisPC
+Hide3DObjectsFromThisPC
 SetVisualFXPerformance
 DisableThumbnails
 DisableThumbsDB
@@ -79,8 +87,8 @@ DisableOneDrive
 UninstallMsftBloat
 UninstallThirdPartyBloat
 UninstallWindowsStore
-DisableConsumerApps
 DisableXboxFeatures
+DisableAdobeFlash
 UninstallMediaPlayer
 # UninstallWorkFolders
 # InstallLinuxSubsystem
