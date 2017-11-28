@@ -498,18 +498,20 @@ Function DisableSMB1 {
 Function EnableSMB1 {
 	Write-Host "Enabling SMB 1.0 protocol..."
 	#Set-SmbServerConfiguration -EnableSMB1Protocol $true -Force
-	Enable-WindowsOptionalFeature -Online -Featurename smb1protocol
+	Enable-WindowsOptionalFeature -Online -NoRestart -Featurename smb1protocol
 }
 
 # Enable unsecure guest auth - Disabled by default since 1709
 
 Function EnableUnsecureGuestAuth {
+	Write-Host "Enabling unsecure guest authentication"
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation" -Name "AllowInsecureGuestAuth" -Type DWord -Value 1
 }
 
 # Disable unsecure guest auth - Disabled by default since 1709
 
 Function DisableUnsecureGuestAuth {
+	Write-Host "Disabling unsecure guest authentication"
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation" -Name "AllowInsecureGuestAuth" -Type DWord -Value 0
 }
 
