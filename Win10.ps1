@@ -33,16 +33,15 @@ $tweaks = @(
 	### Service Tweaks ###
 	"SetUACLow",                  # "SetUACHigh",
 	# "EnableSharingMappedDrives",  # "DisableSharingMappedDrives",
-
-	#"DisableAdminShares",           
-	"EnableAdminShares",
-	# "DisableSMB1",                # "EnableSMB1",
+	"EnableAdminShares",			#"DisableAdminShares",
+	"EnableSMB1",					# "DisableSMB1",                
+	"EnableUnsecureGuestAuth",		# "DisableUnsecureGuestAuth",
 	"SetCurrentNetworkPrivate",     # "SetCurrentNetworkPublic",
 	# "SetUnknownNetworksPrivate",  # "SetUnknownNetworksPublic",
 	"EnableCtrldFolderAccess",      # "DisableCtrldFolderAccess",
 	"DisableFirewall",            # "EnableFirewall",
 	"DisableDefender",            # "EnableDefender",
-	"DisableDefenderCloud,"       # "EnableDefenderCloud",
+	"DisableDefenderCloud",       # "EnableDefenderCloud",
 	# "DisableUpdateMSRT",          # "EnableUpdateMSRT",
 	"DisableUpdateDriver",        # "EnableUpdateDriver",
 	"DisableUpdateRestart",         # "EnableUpdateRestart",
@@ -57,8 +56,10 @@ $tweaks = @(
 	# "DisableSuperfetch",          # "EnableSuperfetch",
 	# "DisableIndexing",            # "EnableIndexing",
 	# "SetBIOSTimeUTC",             # "SetBIOSTimeLocal",
-	# "EnableHibernation",          # "DisableHibernation",
+	# "EnableHibernation",          
+	"DisableHibernation",
 	# "DisableFastStartup",         # "EnableFastStartup",
+	"EnableGFUSearchdomain", 		# "DisableGFUSearchdomain", 
 
 	### UI Tweaks ###
 	"DisableActionCenter",          # "EnableActionCenter",
@@ -114,6 +115,7 @@ $tweaks = @(
 	"DisableNewAppPrompt",          # "EnableNewAppPrompt",
 	"EnableF8BootMenu",             # "DisableF8BootMenu",
 	"SetDEPOptOut",                 # "SetDEPOptIn",
+	"DisablePowerSaveMode"
 
 	### Server Specific Tweaks ###
 	# "HideServerManagerOnLogin",   # "ShowServerManagerOnLogin",
@@ -495,7 +497,20 @@ Function DisableSMB1 {
 # Enable obsolete SMB 1.0 protocol - Disabled by default since 1709
 Function EnableSMB1 {
 	Write-Host "Enabling SMB 1.0 protocol..."
-	Set-SmbServerConfiguration -EnableSMB1Protocol $true -Force
+	#Set-SmbServerConfiguration -EnableSMB1Protocol $true -Force
+	Enable-WindowsOptionalFeature -Online -Featurename smb1protocol
+}
+
+# Enable unsecure guest auth - Disabled by default since 1709
+
+Function EnableUnsecureGuestAuth {
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation" -Name "AllowInsecureGuestAuth" -Type DWord -Value 1
+}
+
+# Disable unsecure guest auth - Disabled by default since 1709
+
+Function DisableUnsecureGuestAuth {
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation" -Name "AllowInsecureGuestAuth" -Type DWord -Value 0
 }
 
 # Set current network profile to private (allow file sharing, device discovery, etc.)
@@ -814,6 +829,19 @@ Function EnableFastStartup {
 	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power" -Name "HiberbootEnabled" -Type DWord -Value 1
 }
 
+# Add GFU-Searchdomain
+
+Function EnableGFUSearchdomain {
+	Write-Host "Adding gfu.net to searchdomains globally"
+	Set-DnsClientGlobalSetting -SuffixSearchList @("gfu.net")
+}
+
+# Remove GFU-Searchdomain
+
+Function DisableGFUSearchdomain {
+	Write-Host "Adding gfu.net to searchdomains globally"
+	Set-DnsClientGlobalSetting -SuffixSearchList @("")
+}
 
 
 ##########
@@ -1421,76 +1449,41 @@ Function InstallOneDrive {
 # Uninstall default Microsoft applications
 Function UninstallMsftBloat {
 	Write-Host "Uninstalling default Microsoft applications..."
-<#
-	Get-AppxPackage "Microsoft.3DBuilder" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.BingFinance" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.BingNews" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.BingSports" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.BingWeather" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.Getstarted" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.MicrosoftOfficeHub" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.MicrosoftSolitaireCollection" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.Office.OneNote" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.People" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.SkypeApp" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.Windows.Photos" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.WindowsAlarms" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.WindowsCamera" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "microsoft.windowscommunicationsapps" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.WindowsMaps" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.WindowsPhone" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.WindowsSoundRecorder" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.ZuneMusic" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.ZuneVideo" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.AppConnector" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.ConnectivityStore" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.Office.Sway" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.Messaging" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.CommsPhone" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.MicrosoftStickyNotes" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.OneConnect" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.WindowsFeedbackHub" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.MinecraftUWP" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.MicrosoftPowerBIForWindows" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.NetworkSpeedTest" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.MSPaint" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.Microsoft3DViewer" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-	Get-AppxPackage "Microsoft.RemoteDesktop" | Remove-AppxPackage | Remove-AppxProvisionedPackage -Online
-#>
-	Get-AppxPackage "Microsoft.3DBuilder" | Remove-AppxPackage
+
+	#Get-AppxPackage "Microsoft.3DBuilder" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.BingFinance" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.BingNews" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.BingSports" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.BingWeather" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.Getstarted" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.MicrosoftOfficeHub" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.MicrosoftSolitaireCollection" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.Getstarted" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.MicrosoftOfficeHub" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.MicrosoftSolitaireCollection" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Office.OneNote" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.People" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.SkypeApp" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.People" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.SkypeApp" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Windows.Photos" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.WindowsAlarms" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.WindowsAlarms" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.WindowsCamera" | Remove-AppxPackage
 	Get-AppxPackage "microsoft.windowscommunicationsapps" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.WindowsMaps" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.WindowsPhone" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.WindowsPhone" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.WindowsSoundRecorder" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.ZuneMusic" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.ZuneVideo" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.ZuneMusic" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.ZuneVideo" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.AppConnector" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.ConnectivityStore" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Office.Sway" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Messaging" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.CommsPhone" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.MicrosoftStickyNotes" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.MicrosoftStickyNotes" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.OneConnect" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.WindowsFeedbackHub" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.MinecraftUWP" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.MicrosoftPowerBIForWindows" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.NetworkSpeedTest" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.MSPaint" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.MSPaint" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Microsoft3DViewer" | Remove-AppxPackage
-	Get-AppxPackage "Microsoft.RemoteDesktop" | Remove-AppxPackage
+	#Get-AppxPackage "Microsoft.RemoteDesktop" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.Print3D" | Remove-AppxPackage
 }
 
@@ -1817,6 +1810,14 @@ Function SetDEPOptOut {
 Function SetDEPOptIn {
 	Write-Host "Setting Data Execution Prevention (DEP) policy to OptIn..."
 	bcdedit /set `{current`} nx OptIn | Out-Null
+}
+
+Function DisablePowerSaveMode {
+	Write-Host "Disabling Powersave timeouts"
+	powercfg -change -monitor-timeout-ac 0
+	powercfg -change -hibernate-timeout-ac 0
+	powercfg -change -disk-timeout-ac 0
+	powercfg -change -standby-timeout-ac 0	
 }
 
 
