@@ -841,7 +841,7 @@ Function EnableGFUSearchdomain {
 # Remove GFU-Searchdomain
 
 Function DisableGFUSearchdomain {
-	Write-Host "Adding gfu.net to searchdomains globally"
+	Write-Host "Removing gfu.net from searchdomains globally"
 	Set-DnsClientGlobalSetting -SuffixSearchList @("")
 }
 
